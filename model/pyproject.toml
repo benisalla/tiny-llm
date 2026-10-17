@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest"]
+dev = ["pytest", "nbformat", "streamlit"]
 
 [tool.setuptools]
 packages = ["tiny_llm"]

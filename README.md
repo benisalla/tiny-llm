@@ -68,6 +68,10 @@ pip install -r chatbot/requirements.txt
 streamlit run chatbot/app.py
 ```
 
+**Free GPU:** upload [`notebooks/train_kaggle_colab.ipynb`](notebooks/train_kaggle_colab.ipynb) to Kaggle or Colab and press *Run all*: it trains, fine-tunes and chats, with no setup.
+
+**Docs:** [architecture](docs/architecture.md) · [training](docs/training.md) · [inference](docs/inference.md) · [testing](docs/testing.md)
+
 No checkpoint yet? The chatbot can load pre-trained small LLMs (GPT-2, SmolLM2, Qwen2.5, Pythia...) straight into our from-scratch architecture (downloaded on first use). Instruct models get a real multi-turn chat.
 
 
@@ -104,10 +108,14 @@ tiny-llm/
 │   │   └── list_families.py    #   print the supported families table
 │   ├── tests/                  #   pytest suite
 │   └── pyproject.toml
-└── chatbot/                    # a simple interface to use the model
-    ├── engine.py               #   backend: loads the model, streams answers
-    ├── app.py                  #   frontend: Streamlit chat UI
-    └── tests/
+├── chatbot/                    # a simple interface to use the model
+│   ├── engine.py               #   backend: loads the model, streams answers
+│   ├── app.py                  #   frontend: Streamlit chat UI
+│   └── tests/
+├── notebooks/                  # self-contained Kaggle / Colab notebook (free GPU)
+│   ├── build_notebook.py       #   generates it from the package, so it never drifts from the code
+│   └── train_kaggle_colab.ipynb
+└── docs/                       # architecture, training, inference, testing
 ```
 
 
@@ -410,18 +418,39 @@ python scripts/make_toy_data.py --out ./data/toy
 
 # 1. pre-training from scratch: learn addition, scored on 1,000 problems never seen in training
 python scripts/train.py --data_dir ./data/toy/arithmetic --ckpt_name arithmetic.pt \
-    --n_layer 4 --n_head 4 --n_embd 128 --block_size 64 --batch_size 32 --grad_accum_steps 1 \
-    --learning_rate 2e-3 --min_lr 2e-4 --warmup_iters 100 --lr_decay_iters 2500 --max_iters 2500 --eval_interval 250
+    --n_layer 4 --n_head 4 --n_embd 128 --block_size 32 --batch_size 16 --grad_accum_steps 1 \
+    --learning_rate 3e-3 --min_lr 3e-4 --warmup_iters 50 --lr_decay_iters 1500 --max_iters 1500 --eval_interval 250
 python scripts/eval_toy.py arithmetic --ckpt ./checkpoints/arithmetic.pt --data ./data/toy/arithmetic/test.json
 
 # 2. LoRA fine-tuning: reading comprehension, scored on people / cities / jobs never seen in training
-python scripts/finetune.py --init_from distilgpt2 --data_dir ./data/toy/qa --lora_rank 8 --learning_rate 1e-3 \
-    --max_iters 300 --warmup_iters 20 --lr_decay_iters 300 --grad_accum_steps 1 --toks_per_batch 2000 --eval_interval 100
 python scripts/eval_toy.py qa --pretrained distilgpt2 --data ./data/toy/qa/val.json        # before fine-tuning
-python scripts/eval_toy.py qa --ckpt ./checkpoints/finetuned.pt --data ./data/toy/qa/val.json
+python scripts/finetune.py --init_from distilgpt2 --data_dir ./data/toy/qa --lora_rank 8 --learning_rate 1e-3 \
+    --min_lr 1e-4 --max_iters 300 --warmup_iters 20 --lr_decay_iters 300 --grad_accum_steps 1 --toks_per_batch 2000 \
+    --eval_interval 100 --ckpt_name qa_finetuned.pt
+python scripts/eval_toy.py qa --ckpt ./checkpoints/qa_finetuned.pt --data ./data/toy/qa/val.json
 ```
 
-<!-- RESULTS -->
+**Results** (CPU only, on a shared and heavily loaded machine; exact match, greedy decoding):
+
+| task | setup | before | after | evaluated on |
+| --- | --- | --- | --- | --- |
+| addition `a+b=` | 7M-param model **from scratch**, 1,500 steps (~45 min) | 0% (random) | **30.1%** | 1,000 problems never seen in training |
+| reading comprehension | **LoRA** (rank 8) on DistilGPT2, 300 steps | 0% | **40.0%** | 100 questions about unseen people, cities and jobs |
+
+| | train loss | val loss |
+| --- | --- | --- |
+| addition (step 0 → 1,500) | 10.83 → 1.86 | 10.83 → 1.87 |
+| reading comprehension (step 0 → 300) | 55.99 → 0.00 | 55.28 → 1.82 (best 1.71 at step 200) |
+
+Reading the numbers honestly:
+- **Addition:** train and val loss stay together, so the model learns the rule, not the pairs. The loss
+  can't go much below ~1.2 because `a` and `b` are random. Wrong answers are usually close
+  (`95+96=` → `188`, `7+83=` → `89`), and the loss was still falling: longer training (e.g. the Kaggle
+  notebook on a GPU) raises the accuracy.
+- **Reading comprehension:** the base model has never seen the `<sost>…<ques>…<ans>` format and just
+  repeats the question; after LoRA it answers in the right format and reads the right fact for 40% of
+  unseen entities. The gap between train (0.00) and val (1.82) loss shows it overfits the 600 training
+  samples: more data, early stopping (best val loss was at step 200) or a larger model would help.
 
 
 ## Tests

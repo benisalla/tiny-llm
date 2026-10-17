@@ -3,3 +3,4 @@ transformers>=4.36
 numpy
 tiktoken
 pytest
+nbformat
