@@ -1,20 +1,22 @@
-# .gitignore
-
-# Ignore Python bytecode files and cache
+# Python bytecode and cache
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# data and checkpoints (too big for git)
+data/
+checkpoints/
 *.bin
-*.json
 *.pt
 
-# Ignore virtual environment directory
+# virtual environments
 venv/
+.venv/
 
-# Ignore Jupyter Notebook checkpoints
+# Jupyter Notebook checkpoints
 .ipynb_checkpoints/
 
-# Ignore Visual Studio Code directory
+# IDEs
 .vscode/
-
+.idea/

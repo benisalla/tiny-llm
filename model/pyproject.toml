@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tiny-llm"
+version = "2.0.0"
+description = "Tiny LLM: a small LLM built from scratch that loads GPT-2, Llama, Qwen2 and Pythia weights, with LoRA fine-tuning"
+requires-python = ">=3.9"
+authors = [{ name = "Ismail Ben Alla" }]
+dependencies = [
+    "torch>=2.0",
+    "transformers>=4.36",
+    "numpy",
+    "tiktoken",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.setuptools]
+packages = ["tiny_llm"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "network: needs to download the GPT-2 tokenizer/weights from the Hugging Face Hub",
+    "slow: takes more than a few seconds",
+]

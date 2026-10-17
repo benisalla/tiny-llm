@@ -1,15 +1,11 @@
-# Micro-Tiny GPT Model FROM SCRATCH
-This is our micro-tiny GPT model (😁 we are still learning), built from scratch and inspired by the innovative approaches of Hugging Face Transformers and OpenAI architectures. Developed during our internship at [3D Smart Factory](https://3dsmartfactory.csit.ma/), this model showcases our committed efforts to create an advanced AI solution.
+# Tiny LLM FROM SCRATCH
+This is our Tiny LLM (😁 we are still learning), built from scratch and inspired by the innovative approaches of Hugging Face Transformers and OpenAI architectures. Developed during our internship at [3D Smart Factory](https://3dsmartfactory.csit.ma/), this model showcases our committed efforts to create an advanced AI solution.
 
 
 <div align="center">
-  <h5>Micro-Tiny-GPT</h5>
+  <h5>Tiny-LLM</h5>
   <img src="https://github-production-user-asset-6210df.s3.amazonaws.com/89405673/264447768-39a2a1a9-ca80-44cd-9d83-fd1358cb379b.png" width="200" height="200" />
 </div>
-
-
-
-
 
 
 <div align="center">
@@ -20,8 +16,6 @@ This is our micro-tiny GPT model (😁 we are still learning), built from scratc
 </div>
 
 
-
-
 ## NOTE
 
 **Important:** This project involves fine-tuning various GPT family models (small, medium, large, etc.) to develop two distinct chatbots: one for question and answer interactions [here](https://github.com/benisalla/fine-tune-GPT-chatbot) and another for context-based question and answer interactions [here](https://github.com/benisalla/fine-tune-gpt2_on_context_Q-A). Additionally, we have implemented a question and answer system based on the core transformer architecture which was initially used for translation tasks [here](https://github.com/benisalla/chatbot-based-translation-transformer).
@@ -30,63 +24,98 @@ This is our micro-tiny GPT model (😁 we are still learning), built from scratc
 **Note:** This is a learning project and does not represent a production-grade solution. The focus is on educational growth and experimentation.
 
 
-
-<aside class="notice" style="background-color:#FFFFE0; border:2px solid #E0E000; padding:10px;">
-**Note:**
-This is an important notice. It provides additional information or a reminder.
-</aside>
-
-
-
-
-
 ## Table of Contents
 
 - [Introduction](#introduction)
-- [OverView](#overview)
+- [Quick Start](#quick-start)
+- [Project Structure](#project-structure)
 - [Data](#data)
-- [Background on GPT](#background-on-GPT)
+- [Background on GPT-2](#background-on-gpt-2)
 - [Model Architecture](#model-architecture)
+- [Supported Model Families](#supported-model-families)
 - [Features of this project](#features-of-this-project)
-- [Benefits of Utilizing MT-GPT](#benefits-of-utilizing-mt-gpt)
-- [Explanatory Videos](#explanatory)
+- [Explanatory Videos](#explanatory-videos)
 - [Training](#training)
 - [Inference](#inference)
-- [Fine Tuning](#fine-tuning-mt-gpt)
+- [Fine Tuning](#fine-tuning-tiny-llm)
+- [Chatbot Interface](#chatbot-interface)
+- [Sanity Check on Simple Data](#sanity-check-on-simple-data)
+- [Tests](#tests)
 - [Contributors](#contributors)
 - [Contact Us](#contact-us)
 - [About Me](#about-me)
 
 
-
-
-
-
 # Introduction
-Welcome to the Micro-Tiny GPT Model repository! This project is an exploration into building a compact GPT model from scratch, taking inspiration from the Hugging Face Transformers and OpenAI architectures. Developed during an internship at 3D Smart Factory, this model represents our dedication to creating advanced AI solutions despite our learning phase.
+Welcome to the Tiny LLM repository! This project is an exploration into building a compact language model from scratch, taking inspiration from the Hugging Face Transformers and OpenAI architectures. Developed during an internship at 3D Smart Factory, this model represents our dedication to creating advanced AI solutions despite our learning phase.
+
+This README walks through the whole process of building the foundational GPT model from scratch: data collection, model architecture, training, fine-tuning (with LoRA), and finally a small chatbot interface to talk with the model.
+
+The same from-scratch code is not limited to GPT-2: a handful of architecture switches let it load other small LLMs (Llama / SmolLM2, Qwen2.5, Pythia), see [Supported Model Families](#supported-model-families).
 
 
+## Quick Start
+
+```bash
+git clone https://github.com/benisalla/tiny-llm.git
+cd tiny-llm
+
+python -m venv .venv && source .venv/bin/activate
+pip install -e model/              # the `tiny_llm` package (torch, transformers, numpy, tiktoken)
+pip install -r chatbot/requirements.txt
+
+# talk to the model in your browser
+streamlit run chatbot/app.py
+```
+
+No checkpoint yet? The chatbot can load pre-trained small LLMs (GPT-2, SmolLM2, Qwen2.5, Pythia...) straight into our from-scratch architecture (downloaded on first use). Instruct models get a real multi-turn chat.
 
 
+## Project Structure
 
-
-# OverView
-
-the Following Readme file offers a thorough exploration of the meticulous process involved in building the foundational GPT model from its inception. Our journey covers vital phases, including data collection, model architecture design, training protocols, and practical applications. Throughout this chapter, we illuminate the intricate nature of developing such a potent language model and its profound potential across various applications in the field of natural language processing.
-
-
-
-
-
-
-
+```
+tiny-llm/
+├── model/                      # everything about the LLM
+│   ├── tiny_llm/               # the python package
+│   │   ├── config.py           #   ModelConfig (architecture switches) + TrainConfig (optimisation)
+│   │   ├── norm.py             #   LayerNorm (GPT-2, Pythia) and RMSNorm (Llama, Qwen2)
+│   │   ├── rope.py             #   rotary position embeddings (Llama, Qwen2, Pythia)
+│   │   ├── attention.py        #   causal self-attention, grouped-query attention, KV cache
+│   │   ├── mlp.py              #   MLP: classic (GELU) or gated (SwiGLU)
+│   │   ├── block.py            #   DBlock = attention + MLP, sequential or parallel residual
+│   │   ├── model.py            #   TinyLLM: embeddings, N blocks, lm_head, generation
+│   │   ├── families.py         #   what changes for each model family + weight name mapping
+│   │   ├── pretrained.py       #   load any supported Hugging Face checkpoint into TinyLLM
+│   │   ├── lora.py             #   LoraLinear, LoraEmbedding, freeze / merge helpers
+│   │   ├── tokenizer.py        #   any HF tokenizer + our special tokens + Q&A prompt format
+│   │   ├── data.py             #   pre-training batches (.bin) and Q&A BatchLoader (.json)
+│   │   ├── training.py         #   lr schedule, loss estimation, the training loop
+│   │   ├── checkpoint.py       #   save / load checkpoints
+│   │   ├── generation.py       #   completion, question answering and chat (streaming)
+│   │   └── runtime.py          #   device, mixed precision, model init, CLI parsing
+│   ├── scripts/
+│   │   ├── prepare_data.py     #   .txt files -> train.bin / val.bin / test.bin
+│   │   ├── train.py            #   pre-training
+│   │   ├── finetune.py         #   (LoRA) fine-tuning on question/answer data
+│   │   ├── generate.py         #   text completion from the command line
+│   │   ├── ask.py              #   ask a question to a fine-tuned checkpoint
+│   │   ├── make_toy_data.py    #   small synthetic datasets (arithmetic, reading comprehension)
+│   │   ├── eval_toy.py         #   exact-match accuracy on them
+│   │   └── list_families.py    #   print the supported families table
+│   ├── tests/                  #   pytest suite
+│   └── pyproject.toml
+└── chatbot/                    # a simple interface to use the model
+    ├── engine.py               #   backend: loads the model, streams answers
+    ├── app.py                  #   frontend: Streamlit chat UI
+    └── tests/
+```
 
 
 ## Data
 
 ### WebText (OpenWebTextCorpus)
 
-To train GPT, OpenAI needed a substantial corpus of 40 GB of high-quality text. While Common Crawl provided the necessary scale for modern language models, its quality was often inconsistent. Manually curating data from Common Crawl was an option but a costly one. Fortunately, Reddit provided a decentralized curation approach by design, proving to be a crucial innovation for creating the WebText dataset.
+To train GPT-2, OpenAI needed a substantial corpus of 40 GB of high-quality text. While Common Crawl provided the necessary scale for modern language models, its quality was often inconsistent. Manually curating data from Common Crawl was an option but a costly one. Fortunately, Reddit provided a decentralized curation approach by design, proving to be a crucial innovation for creating the WebText dataset.
 
 The WebText generation process can be summarized as follows:
 
@@ -110,63 +139,27 @@ OpenWebText2 is an enhanced version of the original OpenWebText corpus, covering
 </div>
 
 
-Due to resource constraints, it is important to note that we trained GPT on only a quarter of the OpenWebText dataset. This limitation in training data was necessary to optimize computational resources while still achieving significant language model performance.
-
-
-
+Due to resource constraints, we trained our model on only a quarter of the OpenWebText dataset. This limitation in training data was necessary to optimize computational resources while still achieving significant language model performance.
 
 
 ### Data Preprocessing
 
 We combined approximately 5 million files from the OpenWebText dataset, roughly equivalent to a quarter of the entire OpenWebText corpus. Subsequently, we performed the following steps:
 
-1. We used the GPT tokenizer, also known as "r50k_base" to tokenize the dataset.
-```
+1. We used the GPT-2 tokenizer, also known as "r50k_base", to tokenize the dataset.
+```python
 import tiktoken
 tokenizer = tiktoken.get_encoding("r50k_base")
-
 ```
 
-2. Following established conventions for dataset splitting, we divided the data into training and validation sets, allocating 80% for training and 10% for validation.
-3. To optimize data management and efficiency, we stored the data as a binary stream in the 'train.bin' and 'val.bin' files.
-```txt files to bin files
-data_dir = "your data path"
+2. Following established conventions for dataset splitting, we divided the data into training, validation and test sets (80% / 10% / 10%).
+3. To optimize data management and efficiency, we stored the token ids as a binary stream (`uint16`) in the `train.bin`, `val.bin` and `test.bin` files.
 
-for prefix in [list of folers in case you are using openwebtext]:
-    f_dir = "dest dir"
-    for idx, filename in enumerate(os.listdir(f_dir)):
-        src_file = os.path.join(f_dir, f'f{idx+1}.txt')
-        with open(src_file, 'r', encoding='utf-8') as f:
-            content = f.read()
-        dset = tokenizing(content)
-        content = None
-        arr_len = np.sum(dset['len'], dtype=np.uint64)
-        dest_file = os.path.join(f"{data_dir}/file_{prefix}/", f'f{idx+1}.bin')
-        dtype = np.uint16 
+All of this is now one command:
 
-        arr = np.memmap(dest_file, dtype=dtype, mode='w+', shape=(arr_len,))    
-        arr[0:arr_len] = np.array(dset['ids'])
-        arr.flush()
-        print(f"✅ f[{idx+1}].txt saved successfully to f{idx+1}.bin")
+```bash
+python model/scripts/prepare_data.py --src ./raw_txt --dst ./data/openwebtext --val_ratio 0.1 --test_ratio 0.1
 ```
-
-```Combine all bins to on large bin (that is silly but i don't have resources)
-
-for split_name in ["test", "val", "train"]:
-    data_dir = "your data dir"
-    f_dir = "dir to where you want to put your data"
-    with open(os.path.join(f_dir, f'{split_name}.bin'), 'wb') as outf:
-        for idx, filename in enumerate(os.listdir(data_dir)):
-            src_path = os.path.join(f"{data_dir}", filename)
-            with open(src_path, 'rb') as input_file:
-                file_contents = input_file.read()
-                outf.write(file_contents)
-    print(f"Concatenation of {split_name} complete.")
-
-```
-
-
-
 
 
 Our dataset is currently accessible on Kaggle:
@@ -179,18 +172,9 @@ Our dataset is currently accessible on Kaggle:
 </div>
 
 
+## Background on GPT-2
 
-
-
-
-
-
-
-
-
-## Background on GPT
-
-The Generative Pre-trained Transformer 2 (GPT), developed by OpenAI, is the second installment in their fundamental series of GPT models. GPT was pretrained on the BookCorpus dataset, consisting of over 7,000 unpublished fiction books of various genres, and then fine-tuned on a dataset comprising 8 million web pages. It was partially unveiled in February 2019, followed by the full release of the 1.5 billion parameter model on November 5, 2019.
+The Generative Pre-trained Transformer 2 (GPT-2), developed by OpenAI, is the second installment in their foundational series of GPT models. Its predecessor, GPT-1, was pre-trained on the BookCorpus dataset (over 7,000 unpublished fiction books); GPT-2 was trained on WebText, a dataset of about 8 million web pages. It was partially unveiled in February 2019, followed by the full release of the 1.5 billion parameter model on November 5, 2019.
 
 
 <div align="center">
@@ -199,9 +183,9 @@ The Generative Pre-trained Transformer 2 (GPT), developed by OpenAI, is the seco
 </div>
 
 
-GPT represents a "direct scale-up" from its predecessor, GPT-1, with a tenfold increase in both the number of parameters and the size of the training dataset. This versatile model owes its ability to perform various tasks to its intrinsic capacity to accurately predict the next element in a sequence. This predictive capability enables GPT to accomplish tasks such as text translation, answering questions based on textual content, summarizing text passages, and generating text that can sometimes closely resemble human style. However, it may exhibit repetitive or nonsensical behavior when generating long passages.
+GPT-2 represents a "direct scale-up" from its predecessor, GPT-1, with a tenfold increase in both the number of parameters and the size of the training dataset. This versatile model owes its ability to perform various tasks to its intrinsic capacity to accurately predict the next element in a sequence. This predictive capability enables GPT-2 to accomplish tasks such as text translation, answering questions based on textual content, summarizing text passages, and generating text that can sometimes closely resemble human style. However, it may exhibit repetitive or nonsensical behavior when generating long passages.
 
-There is a family of GPT models; below, we can see the pretrained GPT model family:
+There is a family of GPT-2 models; below, we can see the pre-trained GPT-2 model family:
 
 
 <div align="center">
@@ -210,22 +194,9 @@ There is a family of GPT models; below, we can see the pretrained GPT model fami
 </div>
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 ## Model Architecture
 
-The architecture of GPT, a groundbreaking language model, represents a notable evolution of deep learning-based transformer models. Initially, it followed the traditional transformer architecture with both encoder and decoder components, but subsequent research simplified the design by removing one.
+The architecture of GPT, a groundbreaking language model, represents a notable evolution of deep learning-based transformer models. The original transformer had both an encoder and a decoder; GPT keeps only the decoder stack (masked self-attention + feed-forward), trained to predict the next token.
 
 <div align="center">
   <h5>GPT Relationship with Transformers</h5>
@@ -233,8 +204,7 @@ The architecture of GPT, a groundbreaking language model, represents a notable e
 </div>
 
 
-
-This led to models with exceptionally high stacks of transformer blocks and massive volumes of training data, often requiring significant computational resources and costs. This chapter explores the architecture of GPT and its relationship with transformers, highlighting innovative developments that shaped its evolution into a powerful language model.
+This led to models with exceptionally high stacks of transformer blocks and massive volumes of training data, often requiring significant computational resources and costs.
 
 
 <div align="center">
@@ -243,47 +213,68 @@ This led to models with exceptionally high stacks of transformer blocks and mass
 </div>
 
 
+In code (`model/tiny_llm/`):
+
+| GPT-2 component | Our module |
+| --- | --- |
+| token + position embeddings | `TinyLLM.transformer.wte` / `wpe` |
+| masked multi-head self-attention | `CausalSelfAttention` |
+| feed-forward (4x, GELU) | `MLP` |
+| pre-LayerNorm residual block (x N) | `DBlock` |
+| final LayerNorm + language model head (tied with `wte`) | `ln_f`, `lm_head` |
+
+Module names match Hugging Face GPT-2, so the official weights load 1:1. The test suite checks that our implementation produces **the same logits and the same greedy generations as Hugging Face GPT-2**.
 
 
+## Supported Model Families
 
+Most small open LLMs are the same decoder-only transformer as GPT-2. They only differ by a few design choices, and each of those choices is one field of `ModelConfig`. Here is what should be changed for each type of model (defaults = GPT-2):
 
+| `ModelConfig` field | GPT-2 / DistilGPT2 | Llama (SmolLM2, TinyLlama) | Qwen2 (Qwen2.5) | GPT-NeoX (Pythia) |
+| --- | --- | --- | --- | --- |
+| `norm_type` | `layernorm` | `rmsnorm` | `rmsnorm` | `layernorm` |
+| `pos_encoding` | `learned` (position matrix) | `rope` | `rope` | `rope` |
+| `rotary_pct` | - | `1.0` | `1.0` | `0.25` (only a quarter of each head is rotated) |
+| `activation` | `gelu_tanh` | `silu` | `silu` | `gelu` |
+| `gated_mlp` | `False` | `True` (SwiGLU) | `True` (SwiGLU) | `False` |
+| `n_kv_head` | = `n_head` | fewer (grouped-query attention) | fewer (grouped-query attention) | = `n_head` |
+| `bias` / `qkv_bias` | `True` / `True` | `False` / `False` | `False` / `True` | `True` / `True` |
+| `parallel_residual` | `False` | `False` | `False` | `True` |
+| `tie_embeddings` | `True` | depends on the checkpoint | depends on the checkpoint | `False` |
 
+The weights also need to be renamed into our layout (GPT-2 names): for example Llama's separate `q_proj`, `k_proj`, `v_proj` are concatenated into our fused `c_attn`, and Pythia's per-head interleaved `query_key_value` is reordered. All of this lives in [`model/tiny_llm/families.py`](model/tiny_llm/families.py), one readable block per family (`python model/scripts/list_families.py` prints its summary).
 
+```python
+from tiny_llm import TinyLLM, create_tokenizer, generate_text
 
+name = "HuggingFaceTB/SmolLM2-135M"          # or "gpt2", "Qwen/Qwen2.5-0.5B", "EleutherAI/pythia-160m", ...
+tokenizer = create_tokenizer(name)            # its own tokenizer + our special tokens
+model = TinyLLM.from_pretrained(name, tokenizer)
+print(generate_text(model, tokenizer, "Once upon a time", max_new_tokens=40))
+```
 
+Every script accepts these names too (`--init_from HuggingFaceTB/SmolLM2-135M`, `--pretrained Qwen/Qwen2.5-0.5B`), so you can continue pre-training or LoRA fine-tune any of them.
 
+**Verified:** for each family the tests build a model with Hugging Face, load it into `TinyLLM`, and check that the logits and the greedy generations (with and without KV cache) are identical.
+
+**Adding a new family:** write its `to_config` (read the Hugging Face config) and `convert` (rename the weights) in `families.py` and call `register(...)`. If it needs a design choice that doesn't exist yet (e.g. Gemma multiplies the embeddings by sqrt(n_embd)), add a field to `ModelConfig` and use it in the layer. Not supported yet: RoPE scaling (Llama 3.x), sliding-window attention, q/k norms (Qwen3), mixture of experts.
 
 
 ## Features of this project
 
-- **Micro-Tiny Scale:** This GPT model is intentionally designed to be on a micro-tiny scale, showcasing our learning journey and commitment to innovation.
+- **Tiny Scale:** This GPT model is intentionally designed to be on a tiny scale, showcasing our learning journey and commitment to innovation.
 
 - **Inspired by Industry Leaders:** Influenced by the Hugging Face Transformers and OpenAI architectures, we've incorporated industry best practices into our model's design.
 
+- **From scratch, many models:** every layer is written by hand, yet GPT-2, Llama/SmolLM2, Qwen2.5 and Pythia checkpoints load into it and give the same outputs as Hugging Face.
+
+- **Fast generation:** KV cache, grouped-query attention, top-k / top-p sampling, streaming.
+
+- **LoRA fine-tuning:** fine-tune HUGE LLMs by training only small low-rank matrices, then merge them back for free inference.
+
+- **A chatbot interface:** a Streamlit app to chat with your model.
+
 - **Internship Project:** Developed during our internship at 3D Smart Factory, this project reflects real-world experience and hands-on learning.
-
-
-
-
-
-
-
-
-
-
-
-## Benefits of Utilizing MT-GPT
-
-Within the realm of Micro-Tiny GPT notebook, there exists a multitude of advantageous applications:
-
-1. Enhanced Textual Performance: Leveraging the ability to train MT-GPT on larger datasets can significantly improve its text generation capabilities.
-
-2. ABC Model Integration: You will find a demonstrative example of integrating MT-GPT with the ABC model in my GitHub repository, showcasing its adaptability to diverse frameworks.
-
-3. Voice Training Capabilities: MT-GPT can be trained on voice data, opening up opportunities for voice-related applications.
-
-4. Sequential Problem Solving: The versatility of MT-GPT extends to addressing various sequential challenges within the field of AI.
-
 
 
 ## Explanatory Videos
@@ -297,12 +288,23 @@ I've created explanatory videos to help you understand the intricate link betwee
 </div>
 
 
-
-
-
-
-
 ## Training
+
+```bash
+cd model
+
+# pre-train from scratch (GPT-2 small size by default)
+python scripts/train.py --data_dir ./data/openwebtext --init_from scratch
+
+# a small run that fits on a laptop
+python scripts/train.py --data_dir ./data/openwebtext --n_layer 4 --n_head 4 --n_embd 256 \
+    --block_size 256 --batch_size 8 --grad_accum_steps 4
+
+# continue from the last checkpoint
+python scripts/train.py --data_dir ./data/openwebtext --init_from resume
+```
+
+Every field of `ModelConfig` and `TrainConfig` is a command-line flag (`python scripts/train.py --help`). Checkpoints go to `./checkpoints/ckpt.pt` whenever the validation loss improves. Mixed precision (bfloat16 / float16) is used automatically on GPU.
 
 <div align="center">
   <h4>Loss function</h4>
@@ -310,12 +312,12 @@ I've created explanatory videos to help you understand the intricate link betwee
 </div>
 
 
-
-
-
-
-
 ## Inference
+
+```bash
+python scripts/generate.py --ckpt ./checkpoints/ckpt.pt --prompt "ismail ben alla is the next elon mask because"
+python scripts/generate.py --pretrained gpt2 --prompt "Once upon a time"   # original GPT-2 weights
+```
 
 <div align="center">
   <h4>Example 1</h4>
@@ -333,13 +335,32 @@ I've created explanatory videos to help you understand the intricate link betwee
 </div>
 
 
+## Fine tuning Tiny LLM
 
+Fine-tuning data is a JSON list of `{"context": ..., "question": ..., "answer": ...}` in `train.json` and `val.json`. Each sample becomes:
 
+```
+<sost>{context}<ques>{question}<ans>{answer}<eost>
+```
 
+By default the loss is only computed on the answer (`--loss_on_answer_only true`) and padding is never part of the loss.
 
-## fine tuning MT-GPT
+```bash
+cd model
 
-  For detailed information, refer to the project [Fine-Tuning Pretrained GPT-2](https://github.com/benisalla/fine-tune-gpt2_on_context_Q-A), where GPT-2 has been fine-tuned specifically for context-question-answer scenarios.
+# LoRA fine-tuning of GPT-2 (only the low-rank matrices + token embeddings are trained)
+python scripts/finetune.py --init_from gpt2 --data_dir ./data/qa --lora_rank 8 \
+    --learning_rate 3e-4 --drop_rate 0.1 --max_iters 2000
+
+# LoRA fine-tuning of our own pre-trained model
+python scripts/finetune.py --init_from resume --resume_from ./checkpoints/ckpt.pt --data_dir ./data/qa --lora_rank 8
+
+# ask it something
+python scripts/ask.py --ckpt ./checkpoints/finetuned.pt \
+    --context "Ismail Ben Alla built Tiny LLM at 3D Smart Factory." --question "Who built Tiny LLM?"
+```
+
+For more details, see the project [Fine-Tuning Pretrained GPT-2](https://github.com/benisalla/fine-tune-gpt2_on_context_Q-A), where GPT-2 has been fine-tuned specifically for context-question-answer scenarios.
 
 <div align="center">
   <h4>Example 1</h4>
@@ -355,11 +376,69 @@ I've created explanatory videos to help you understand the intricate link betwee
 </div>
 
 
+## Chatbot Interface
+
+```bash
+streamlit run chatbot/app.py
+# or point it to a specific checkpoint
+TINY_LLM_CKPT=model/checkpoints/finetuned.pt streamlit run chatbot/app.py
+```
+
+- **Weights:** one of your checkpoints (`.pt`) or any supported pre-trained small LLM (SmolLM2, Qwen2.5, GPT-2, Pythia, or any Hugging Face id of a supported family).
+- **Modes:** *chat* for instruct models (multi-turn, uses the model's own chat template), *question answering* (with an optional context paragraph) for checkpoints fine-tuned with `finetune.py`, *text completion* for base models. The right mode is picked automatically.
+- **Generation settings:** max new tokens, temperature, top-k, top-p. Answers are streamed token by token.
+
+The backend (`chatbot/engine.py`) has no UI code, so the same `ChatEngine` can be used from a notebook or behind an API:
+
+```python
+from engine import ChatEngine
+bot = ChatEngine.from_checkpoint("model/checkpoints/finetuned.pt")
+print(bot.reply("Who built Tiny LLM?", context="Ismail Ben Alla built Tiny LLM."))
+
+bot = ChatEngine.from_pretrained("HuggingFaceTB/SmolLM2-135M-Instruct")
+print(bot.reply("What is the capital of France?"))   # -> "The capital of France is Paris."
+```
+
+
+## Sanity Check on Simple Data
+
+Unit tests prove the code is correct; these two small synthetic tasks prove the model actually **learns**, in minutes on a CPU.
+
+```bash
+cd model
+python scripts/make_toy_data.py --out ./data/toy
+
+# 1. pre-training from scratch: learn addition, scored on 1,000 problems never seen in training
+python scripts/train.py --data_dir ./data/toy/arithmetic --ckpt_name arithmetic.pt \
+    --n_layer 4 --n_head 4 --n_embd 128 --block_size 64 --batch_size 32 --grad_accum_steps 1 \
+    --learning_rate 2e-3 --min_lr 2e-4 --warmup_iters 100 --lr_decay_iters 2500 --max_iters 2500 --eval_interval 250
+python scripts/eval_toy.py arithmetic --ckpt ./checkpoints/arithmetic.pt --data ./data/toy/arithmetic/test.json
+
+# 2. LoRA fine-tuning: reading comprehension, scored on people / cities / jobs never seen in training
+python scripts/finetune.py --init_from distilgpt2 --data_dir ./data/toy/qa --lora_rank 8 --learning_rate 1e-3 \
+    --max_iters 300 --warmup_iters 20 --lr_decay_iters 300 --grad_accum_steps 1 --toks_per_batch 2000 --eval_interval 100
+python scripts/eval_toy.py qa --pretrained distilgpt2 --data ./data/toy/qa/val.json        # before fine-tuning
+python scripts/eval_toy.py qa --ckpt ./checkpoints/finetuned.pt --data ./data/toy/qa/val.json
+```
+
+<!-- RESULTS -->
+
+
+## Tests
+
+```bash
+pip install pytest
+cd model && pytest                 # layers, LoRA, model, data, training, scripts end-to-end,
+                                   # every family vs Hugging Face (tiny random models, no download), GPT-2 weights
+cd ../chatbot && pytest            # engine + the Streamlit UI (headless)
+pytest -m "not network"            # skip tests that download GPT-2 from the Hugging Face Hub
+TINY_LLM_TEST_HUB=1 pytest tests/test_hub_models.py   # real DistilGPT2, SmolLM2, Pythia, Qwen2.5 (~1.7 GB)
+```
 
 
 ## Contributors
 
-Acknowledge the significant contributions of your colleagues, attributing specific roles and responsibilities to each individual:
+Thanks to the team who built this project with me:
 
 - [Ben Alla Ismail (me 😃)](https://github.com/benisalla)
 - [Agrat Mohammed](https://github.com/agrat)
@@ -368,15 +447,10 @@ Acknowledge the significant contributions of your colleagues, attributing specif
 - [Daoudi Ayoub](https://github.com/Daoudi-Ayoub)
 
 
-
-
-
 ## Contact Us
 For inquiries or suggestions, please contact:
 - Project Lead: Ben alla ismail ([ismailbenalla52@gmail.com](mailto:ismailbenalla52@gmail.com))
 - Co-lead: mhaoui Siham ([mahouisiham@gmail.com](mailto:mahouisiham@gmail.com))
-
-
 
 
 ## About Me
@@ -401,10 +475,6 @@ Let's connect and explore the fascinating world of artificial intelligence toget
     <img src="https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/instagram.svg" alt="ismail_ben_alla" height="30" width="40" />
   </a>
 </div>
-
-
-
-
 
 
 <div align="center">
