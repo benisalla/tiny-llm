@@ -1,24 +1,23 @@
 # Tiny LLM FROM SCRATCH
-This is our Tiny LLM (😁 we are still learning), built from scratch and inspired by the innovative approaches of Hugging Face Transformers and OpenAI architectures. Developed during our internship at [3D Smart Factory](https://3dsmartfactory.csit.ma/), this model showcases our committed efforts to create an advanced AI solution.
+Tiny LLM is my personal project: a small large language model built from scratch in PyTorch (😁 I'm still learning). Every layer is written by hand, and the same code can be trained from zero or load real open LLMs (GPT-2, Llama / SmolLM2, Qwen2.5, Pythia) with outputs identical to Hugging Face, fine-tune them with LoRA, and chat with them.
 
 
 <div align="center">
-  <h5>Tiny-LLM</h5>
-  <img src="https://github-production-user-asset-6210df.s3.amazonaws.com/89405673/264447768-39a2a1a9-ca80-44cd-9d83-fd1358cb379b.png" width="200" height="200" />
+  <img src="docs/images/logo.svg" width="200" height="200" alt="Tiny LLM logo"/>
 </div>
 
 
 <div align="center">
-  <h5>A little demo</h5>
-  <a href="https://drive.google.com/file/d/1QO3Is-Il5koQb8WpgAtzE-KWBa_E2Xsr/view?usp=sharing">
-    <img src="https://github.com/benisalla/micro-tiny-gpt-from-scratch/assets/89405673/ac9b010d-1612-4f28-8856-421062fe0175.png" width="600" height="250" alt="Explanatory Video"/>
+  <h5>The chatbot: SmolLM2-135M-Instruct running in Tiny LLM's from-scratch code</h5>
+  <a href="#chatbot-interface">
+    <img src="docs/images/chatbot.png" width="700" alt="Tiny LLM chatbot"/>
   </a>
 </div>
 
 
 ## NOTE
 
-**Important:** This project involves fine-tuning various GPT family models (small, medium, large, etc.) to develop two distinct chatbots: one for question and answer interactions [here](https://github.com/benisalla/fine-tune-GPT-chatbot) and another for context-based question and answer interactions [here](https://github.com/benisalla/fine-tune-gpt2_on_context_Q-A). Additionally, we have implemented a question and answer system based on the core transformer architecture which was initially used for translation tasks [here](https://github.com/benisalla/chatbot-based-translation-transformer).
+**Related projects:** a question-answering chatbot built by fine-tuning pre-trained language models [here](https://github.com/benisalla/fine-tune-GPT-chatbot), a context-based question answering model [here](https://github.com/benisalla/fine-tune-gpt2_on_context_Q-A), and a question answering system built on the original encoder-decoder transformer [here](https://github.com/benisalla/chatbot-based-translation-transformer).
 
 
 **Note:** This is a learning project and does not represent a production-grade solution. The focus is on educational growth and experimentation.
@@ -30,7 +29,7 @@ This is our Tiny LLM (😁 we are still learning), built from scratch and inspir
 - [Quick Start](#quick-start)
 - [Project Structure](#project-structure)
 - [Data](#data)
-- [Background on GPT-2](#background-on-gpt-2)
+- [Background: How LLMs Work](#background-how-llms-work)
 - [Model Architecture](#model-architecture)
 - [Supported Model Families](#supported-model-families)
 - [Features of this project](#features-of-this-project)
@@ -47,11 +46,11 @@ This is our Tiny LLM (😁 we are still learning), built from scratch and inspir
 
 
 # Introduction
-Welcome to the Tiny LLM repository! This project is an exploration into building a compact language model from scratch, taking inspiration from the Hugging Face Transformers and OpenAI architectures. Developed during an internship at 3D Smart Factory, this model represents our dedication to creating advanced AI solutions despite our learning phase.
+Welcome to the Tiny LLM repository! I built this project to understand large language models by writing one from scratch, taking inspiration from Hugging Face Transformers and from the papers behind today's open models.
 
-This README walks through the whole process of building the foundational GPT model from scratch: data collection, model architecture, training, fine-tuning (with LoRA), and finally a small chatbot interface to talk with the model.
+This README walks through the whole process: data collection, model architecture, pre-training, fine-tuning (with LoRA), and finally a small chatbot interface to talk with the model.
 
-The same from-scratch code is not limited to GPT-2: a handful of architecture switches let it load other small LLMs (Llama / SmolLM2, Qwen2.5, Pythia), see [Supported Model Families](#supported-model-families).
+The code is not tied to one model: a handful of architecture switches let the same implementation load GPT-2, Llama / SmolLM2, Qwen2.5 and Pythia checkpoints, see [Supported Model Families](#supported-model-families).
 
 
 ## Quick Start
@@ -180,58 +179,40 @@ Our dataset is currently accessible on Kaggle:
 </div>
 
 
-## Background on GPT-2
+## Background: How LLMs Work
 
-The Generative Pre-trained Transformer 2 (GPT-2), developed by OpenAI, is the second installment in their foundational series of GPT models. Its predecessor, GPT-1, was pre-trained on the BookCorpus dataset (over 7,000 unpublished fiction books); GPT-2 was trained on WebText, a dataset of about 8 million web pages. It was partially unveiled in February 2019, followed by the full release of the 1.5 billion parameter model on November 5, 2019.
+A large language model is trained on one simple task: **predict the next token**. Given "The capital of France is", it outputs a probability for every token of its vocabulary, and " Paris" should get the highest one. Generating text is just repeating this: pick a token, append it, predict again.
 
+Doing this well on billions of words forces the model to learn grammar, facts and some reasoning, which is why the same network can then answer questions, summarise or chat once it is fine-tuned. Since GPT-2 (2019) almost every open LLM uses the same recipe: a stack of **decoder-only transformer blocks** trained on large web corpora. The models differ in size, data and a few design choices, not in the core idea.
 
-<div align="center">
-  <h5>GPT Model</h5>
-  <img src="https://github-production-user-asset-6210df.s3.amazonaws.com/89405673/273406289-a66928b2-b651-4fb5-81b2-f9429685d9d0.jpg" width="600" height="300" />
-</div>
-
-
-GPT-2 represents a "direct scale-up" from its predecessor, GPT-1, with a tenfold increase in both the number of parameters and the size of the training dataset. This versatile model owes its ability to perform various tasks to its intrinsic capacity to accurately predict the next element in a sequence. This predictive capability enables GPT-2 to accomplish tasks such as text translation, answering questions based on textual content, summarizing text passages, and generating text that can sometimes closely resemble human style. However, it may exhibit repetitive or nonsensical behavior when generating long passages.
-
-There is a family of GPT-2 models; below, we can see the pre-trained GPT-2 model family:
-
+Small open models are perfect to learn with: they run on a laptop, and Tiny LLM can load all of these:
 
 <div align="center">
-  <h5>GPT Model Family</h5>
-  <img src="https://github-production-user-asset-6210df.s3.amazonaws.com/89405673/273406288-e0dc48f8-a5e1-4807-8184-39ca3e2a88c5.jpg" width="700" height="300" />
+  <img src="docs/images/small_llms.svg" width="760" alt="Small LLMs that Tiny LLM can load"/>
 </div>
 
 
 ## Model Architecture
 
-The architecture of GPT, a groundbreaking language model, represents a notable evolution of deep learning-based transformer models. The original transformer had both an encoder and a decoder; GPT keeps only the decoder stack (masked self-attention + feed-forward), trained to predict the next token.
+The original transformer had an encoder and a decoder. LLMs keep only the decoder: masked (causal) self-attention, where each token only looks at the tokens before it, followed by a feed-forward MLP, repeated N times with residual connections and normalisation.
 
 <div align="center">
-  <h5>GPT Relationship with Transformers</h5>
-  <img src="https://github-production-user-asset-6210df.s3.amazonaws.com/89405673/273406295-de6880cf-7d77-4b16-bcb5-d58b950e3404.jpg" width="700" height="300" />
-</div>
-
-
-This led to models with exceptionally high stacks of transformer blocks and massive volumes of training data, often requiring significant computational resources and costs.
-
-
-<div align="center">
-  <h5>Full GPT Architecture</h5>
-  <img src="https://github-production-user-asset-6210df.s3.amazonaws.com/89405673/273406294-83845cfb-f442-478f-9993-3412225dabb7.png" width="350" height="600" />
+  <img src="docs/images/llm_architecture.svg" width="800" alt="Decoder-only LLM architecture"/>
 </div>
 
 
 In code (`model/tiny_llm/`):
 
-| GPT-2 component | Our module |
+| component | module |
 | --- | --- |
-| token + position embeddings | `TinyLLM.transformer.wte` / `wpe` |
-| masked multi-head self-attention | `CausalSelfAttention` |
-| feed-forward (4x, GELU) | `MLP` |
-| pre-LayerNorm residual block (x N) | `DBlock` |
-| final LayerNorm + language model head (tied with `wte`) | `ln_f`, `lm_head` |
+| token embeddings (+ learned positions or RoPE) | `TinyLLM.transformer.wte` / `wpe`, `RotaryEmbedding` |
+| masked multi-head / grouped-query self-attention, KV cache | `CausalSelfAttention` |
+| feed-forward (GELU or SwiGLU) | `MLP` |
+| pre-norm residual block (x N), sequential or parallel | `DBlock` |
+| LayerNorm / RMSNorm | `LayerNorm`, `RMSNorm` |
+| final norm + language model head | `ln_f`, `lm_head` |
 
-Module names match Hugging Face GPT-2, so the official weights load 1:1. The test suite checks that our implementation produces **the same logits and the same greedy generations as Hugging Face GPT-2**.
+The test suite checks that this implementation produces **the same logits and the same greedy generations as Hugging Face** for every supported family.
 
 
 ## Supported Model Families
@@ -270,9 +251,9 @@ Every script accepts these names too (`--init_from HuggingFaceTB/SmolLM2-135M`, 
 
 ## Features of this project
 
-- **Tiny Scale:** This GPT model is intentionally designed to be on a tiny scale, showcasing our learning journey and commitment to innovation.
+- **Tiny Scale:** small enough to train and run on a laptop, so every step can be understood and tested.
 
-- **Inspired by Industry Leaders:** Influenced by the Hugging Face Transformers and OpenAI architectures, we've incorporated industry best practices into our model's design.
+- **Inspired by the best open implementations:** design choices follow Hugging Face Transformers and the papers behind GPT-2, Llama, Qwen and Pythia.
 
 - **From scratch, many models:** every layer is written by hand, yet GPT-2, Llama/SmolLM2, Qwen2.5 and Pythia checkpoints load into it and give the same outputs as Hugging Face.
 
@@ -281,8 +262,6 @@ Every script accepts these names too (`--init_from HuggingFaceTB/SmolLM2-135M`, 
 - **LoRA fine-tuning:** fine-tune HUGE LLMs by training only small low-rank matrices, then merge them back for free inference.
 
 - **A chatbot interface:** a Streamlit app to chat with your model.
-
-- **Internship Project:** Developed during our internship at 3D Smart Factory, this project reflects real-world experience and hands-on learning.
 
 
 ## Explanatory Videos
@@ -365,7 +344,7 @@ python scripts/finetune.py --init_from resume --resume_from ./checkpoints/ckpt.p
 
 # ask it something
 python scripts/ask.py --ckpt ./checkpoints/finetuned.pt \
-    --context "Ismail Ben Alla built Tiny LLM at 3D Smart Factory." --question "Who built Tiny LLM?"
+    --context "Ismail Ben Alla built Tiny LLM from scratch in PyTorch." --question "Who built Tiny LLM?"
 ```
 
 For more details, see the project [Fine-Tuning Pretrained GPT-2](https://github.com/benisalla/fine-tune-gpt2_on_context_Q-A), where GPT-2 has been fine-tuned specifically for context-question-answer scenarios.
@@ -503,10 +482,4 @@ Let's connect and explore the fascinating world of artificial intelligence toget
   <a href="https://instagram.com/ismail_ben_alla" target="blank">
     <img src="https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/instagram.svg" alt="ismail_ben_alla" height="30" width="40" />
   </a>
-</div>
-
-
-<div align="center">
-  <h4>You are about to witness some pure magic ✨🎩 !! Ta-da!</h4>
-  <img src="https://github-production-user-asset-6210df.s3.amazonaws.com/89405673/270190847-0b3ee23b-c082-483e-9e12-8b15a1b8f0a3.gif" width="500" height="300"/>
 </div>

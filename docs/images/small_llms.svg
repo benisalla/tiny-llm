@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="630" viewBox="0 0 900 630" role="img" aria-label="Small LLMs that Tiny LLM can load, by size and family">
+<rect width="900" height="630" rx="24" fill="#0f172a"/>
+<text x="40" y="48" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" font-weight="800" fill="#e2e8f0">Small LLMs you can load into Tiny LLM</text>
+<text x="40" y="74" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#94a3b8">Parameters (millions). Same from-scratch code, outputs identical to Hugging Face. Any other checkpoint of these families works too.</text>
+<rect x="40" y="92" width="14" height="14" rx="3" fill="#22d3ee"/>
+<text x="60" y="104" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#cbd5e1">GPT-2</text>
+<rect x="135" y="92" width="14" height="14" rx="3" fill="#a78bfa"/>
+<text x="155" y="104" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#cbd5e1">Llama</text>
+<rect x="230" y="92" width="14" height="14" rx="3" fill="#f0abfc"/>
+<text x="250" y="104" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#cbd5e1">Qwen2</text>
+<rect x="325" y="92" width="14" height="14" rx="3" fill="#34d399"/>
+<text x="345" y="104" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#cbd5e1">GPT-NeoX (Pythia)</text>
+<text x="178" y="141" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#e2e8f0" text-anchor="end">distilgpt2</text>
+<rect x="190" y="126" width="29.5" height="22" rx="6" fill="#22d3ee" opacity="0.9"/>
+<text x="229.5" y="142" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#94a3b8">82M</text>
+<text x="178" y="181" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#e2e8f0" text-anchor="end">gpt2</text>
+<rect x="190" y="166" width="44.6" height="22" rx="6" fill="#22d3ee" opacity="0.9"/>
+<text x="244.6" y="182" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#94a3b8">124M</text>
+<text x="178" y="221" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#e2e8f0" text-anchor="end">SmolLM2-135M</text>
+<rect x="190" y="206" width="48.5" height="22" rx="6" fill="#a78bfa" opacity="0.9"/>
+<text x="248.5" y="222" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#94a3b8">135M</text>
+<text x="178" y="261" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#e2e8f0" text-anchor="end">pythia-160m</text>
+<rect x="190" y="246" width="58.2" height="22" rx="6" fill="#34d399" opacity="0.9"/>
+<text x="258.2" y="262" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#94a3b8">162M</text>
+<text x="178" y="301" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#e2e8f0" text-anchor="end">gpt2-medium</text>
+<rect x="190" y="286" width="127.6" height="22" rx="6" fill="#22d3ee" opacity="0.9"/>
+<text x="327.6" y="302" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#94a3b8">355M</text>
+<text x="178" y="341" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#e2e8f0" text-anchor="end">SmolLM2-360M</text>
+<rect x="190" y="326" width="130.1" height="22" rx="6" fill="#a78bfa" opacity="0.9"/>
+<text x="330.1" y="342" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#94a3b8">362M</text>
+<text x="178" y="381" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#e2e8f0" text-anchor="end">pythia-410m</text>
+<rect x="190" y="366" width="145.6" height="22" rx="6" fill="#34d399" opacity="0.9"/>
+<text x="345.6" y="382" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#94a3b8">405M</text>
+<text x="178" y="421" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#e2e8f0" text-anchor="end">Qwen2.5-0.5B</text>
+<rect x="190" y="406" width="177.6" height="22" rx="6" fill="#f0abfc" opacity="0.9"/>
+<text x="377.6" y="422" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#94a3b8">494M</text>
+<text x="178" y="461" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#e2e8f0" text-anchor="end">gpt2-large</text>
+<rect x="190" y="446" width="278.2" height="22" rx="6" fill="#22d3ee" opacity="0.9"/>
+<text x="478.2" y="462" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#94a3b8">774M</text>
+<text x="178" y="501" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#e2e8f0" text-anchor="end">TinyLlama-1.1B</text>
+<rect x="190" y="486" width="395.4" height="22" rx="6" fill="#a78bfa" opacity="0.9"/>
+<text x="595.4" y="502" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#94a3b8">1.1B</text>
+<text x="178" y="541" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#e2e8f0" text-anchor="end">gpt2-xl</text>
+<rect x="190" y="526" width="560.0" height="22" rx="6" fill="#22d3ee" opacity="0.9"/>
+<text x="760.0" y="542" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#94a3b8">1.6B</text>
+<text x="40" y="602" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#64748b">Verified against Hugging Face: GPT-2, DistilGPT2, SmolLM2, Pythia (real checkpoints) and every family on random tiny models.</text>
+</svg>

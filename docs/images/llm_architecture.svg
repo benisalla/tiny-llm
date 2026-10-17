@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="672" viewBox="0 0 900 672" role="img"
+     aria-label="Decoder-only LLM architecture and what changes between model families">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#94a3b8"/>
+    </marker>
+    <style>
+      .t { font-family: Inter, 'Segoe UI', Helvetica, Arial, sans-serif; fill: #e2e8f0; }
+      .box { rx: 10; stroke-width: 1.5; }
+      .lbl { font-size: 15px; font-weight: 600; text-anchor: middle; }
+      .h { font-size: 13px; font-weight: 700; fill: #22d3ee; letter-spacing: 1px; }
+      .o { font-size: 13px; fill: #cbd5e1; }
+      .fam { font-size: 12px; fill: #94a3b8; }
+      .link { stroke: #475569; stroke-width: 1.5; stroke-dasharray: 4 4; fill: none; }
+      .flow { stroke: #94a3b8; stroke-width: 2; fill: none; marker-end: url(#ar); }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="900" height="672" rx="24" fill="#0f172a"/>
+  <text class="t" x="40" y="46" font-size="22" font-weight="800">One decoder-only transformer, many LLMs</text>
+  <text class="t" x="40" y="72" font-size="14" fill="#94a3b8">Every model this repo loads is this network; families only differ by a few switches (right).</text>
+
+  <!-- ===== the network (left) ===== -->
+  <text class="t lbl" x="200" y="110" fill="#94a3b8" font-weight="500">tokens: "The capital of France is"</text>
+  <path class="flow" d="M200 118 V136"/>
+
+  <rect class="box" x="90" y="138" width="220" height="40" fill="#1e293b" stroke="#22d3ee"/>
+  <text class="t lbl" x="200" y="163">Token embedding</text>
+  <path class="flow" d="M200 178 V196"/>
+
+  <!-- block x N -->
+  <rect x="62" y="198" width="276" height="320" rx="16" fill="#111c33" stroke="#a78bfa" stroke-dasharray="6 5"/>
+  <text class="t" x="330" y="222" font-size="14" font-weight="700" fill="#a78bfa" text-anchor="end">Block × N</text>
+
+  <rect class="box" x="90" y="232" width="220" height="36" fill="#1e293b" stroke="#64748b"/>
+  <text class="t lbl" x="200" y="255">Norm</text>
+  <path class="flow" d="M200 268 V284"/>
+  <rect class="box" x="90" y="286" width="220" height="44" fill="#1e293b" stroke="#f0abfc"/>
+  <text class="t lbl" x="200" y="306">Causal self-attention</text>
+  <text class="t" x="200" y="323" font-size="12" text-anchor="middle" fill="#94a3b8">+ positions</text>
+  <path class="flow" d="M200 330 V348"/>
+  <circle cx="200" cy="360" r="11" fill="#0f172a" stroke="#94a3b8" stroke-width="2"/>
+  <text class="t" x="200" y="365" font-size="16" text-anchor="middle">+</text>
+  <path class="flow" d="M200 371 V384"/>
+  <rect class="box" x="90" y="386" width="220" height="36" fill="#1e293b" stroke="#64748b"/>
+  <text class="t lbl" x="200" y="409">Norm</text>
+  <path class="flow" d="M200 422 V438"/>
+  <rect class="box" x="90" y="440" width="220" height="36" fill="#1e293b" stroke="#22d3ee"/>
+  <text class="t lbl" x="200" y="463">MLP</text>
+  <!-- residual lines -->
+  <path d="M80 214 V360 H189" fill="none" stroke="#475569" stroke-width="1.5"/>
+  <text class="t" x="70" y="300" font-size="11" fill="#64748b" transform="rotate(-90 70 300)" text-anchor="middle">residual</text>
+
+  <path class="flow" d="M200 476 V488"/>
+  <circle cx="200" cy="500" r="11" fill="#0f172a" stroke="#94a3b8" stroke-width="2"/>
+  <text class="t" x="200" y="505" font-size="16" text-anchor="middle">+</text>
+  <path d="M80 376 V500 H189" fill="none" stroke="#475569" stroke-width="1.5"/>
+  <path d="M80 376 H189" fill="none" stroke="#475569" stroke-width="1.5"/>
+
+  <path class="flow" d="M200 511 V534"/>
+  <rect class="box" x="90" y="536" width="220" height="36" fill="#1e293b" stroke="#64748b"/>
+  <text class="t lbl" x="200" y="559">Final norm</text>
+  <path class="flow" d="M200 572 V588"/>
+  <rect class="box" x="90" y="590" width="220" height="36" fill="#1e293b" stroke="#22d3ee"/>
+  <text class="t lbl" x="200" y="613">LM head → next token</text>
+  <text class="t lbl" x="200" y="652" fill="#22d3ee">" Paris"</text>
+
+  <!-- ===== the switches (right) ===== -->
+  <g transform="translate(420 100)">
+    <text class="t h" x="0" y="0">NORM</text>
+    <text class="t o" x="0" y="20">LayerNorm  ·  RMSNorm</text>
+    <text class="t fam" x="0" y="38">GPT-2, Pythia  ·  Llama, Qwen2</text>
+
+    <text class="t h" x="0" y="80">POSITIONS</text>
+    <text class="t o" x="0" y="100">learned vectors  ·  RoPE (rotary)  ·  partial RoPE</text>
+    <text class="t fam" x="0" y="118">GPT-2  ·  Llama, Qwen2  ·  Pythia (25% of each head)</text>
+
+    <text class="t h" x="0" y="160">ATTENTION</text>
+    <text class="t o" x="0" y="180">multi-head  ·  grouped-query (shared K/V heads)</text>
+    <text class="t fam" x="0" y="198">GPT-2, Pythia  ·  Llama, Qwen2 (smaller KV cache)</text>
+
+    <text class="t h" x="0" y="240">MLP</text>
+    <text class="t o" x="0" y="260">GELU  ·  SwiGLU (gated SiLU)</text>
+    <text class="t fam" x="0" y="278">GPT-2, Pythia  ·  Llama, Qwen2</text>
+
+    <text class="t h" x="0" y="320">BLOCK LAYOUT</text>
+    <text class="t o" x="0" y="340">sequential  ·  parallel (attention and MLP side by side)</text>
+    <text class="t fam" x="0" y="358">GPT-2, Llama, Qwen2  ·  Pythia</text>
+
+    <text class="t h" x="0" y="400">BIASES · OUTPUT HEAD</text>
+    <text class="t o" x="0" y="420">all  ·  none  ·  q/k/v only   |   tied  ·  separate</text>
+    <text class="t fam" x="0" y="438">GPT-2, Pythia  ·  Llama  ·  Qwen2   |   per checkpoint</text>
+
+    <rect x="0" y="466" width="440" height="52" rx="10" fill="#1e293b" stroke="#334155"/>
+    <text class="t" x="16" y="488" font-size="13" fill="#e2e8f0">All switches live in <tspan fill="#22d3ee" font-family="monospace">ModelConfig</tspan>; each family's choices</text>
+    <text class="t" x="16" y="507" font-size="13" fill="#e2e8f0">and weight names are in <tspan fill="#22d3ee" font-family="monospace">tiny_llm/families.py</tspan>.</text>
+  </g>
+
+  <!-- dashed links from the network to the switches -->
+  <path class="link" d="M310 250 C360 250 370 105 412 105"/>
+  <path class="link" d="M310 316 C360 316 370 185 412 185"/>
+  <path class="link" d="M310 300 C360 300 370 265 412 265"/>
+  <path class="link" d="M310 458 C360 458 370 345 412 345"/>
+  <path class="link" d="M338 420 C370 420 380 425 412 425"/>
+</svg>
